@@ -1,15 +1,16 @@
 FROM alpine:latest
 
-ARG TARGETOS
-ARG TARGETARCH
+RUN apk update && \
+	apk add --no-cache unbound drill && \
+	rm -vrf /var/cache/apk/*
 
-RUN apk update && apk add --no-cache unbound wget && rm -vrf /var/cache/apk/* && \
-	wget -S -N https://www.internic.net/domain/named.cache -O /etc/unbound/root.hints
+WORKDIR /opt/unbound
 
-ADD init.sh /init.sh
+RUN unbound-anchor -a "/opt/root.key" || true
+RUN chown -R unbound:unbound /opt
 
-EXPOSE 53 53/udp
+EXPOSE 53/tcp 53/udp
 
-VOLUME [ "/etc/unbound" ]
+#HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 CMD drill @127.0.0.1 cloudflare.com || exit 1
 
-ENTRYPOINT [ "/init.sh" ]
+CMD ["unbound", "-c", "/opt/unbound/unbound.conf"]
