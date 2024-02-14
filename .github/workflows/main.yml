@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: raytraxx/unbound
+  IMAGE_NAME: ${{ github.repository }}
   PLATFORMS: "linux/amd64,linux/arm64"
 
 jobs:
